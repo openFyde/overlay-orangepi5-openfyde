@@ -1,0 +1,74 @@
+Index: linux/drivers/gpu/arm/bifrost/backend/gpu/mali_kbase_devfreq.c
+===================================================================
+--- linux.orig/drivers/gpu/arm/bifrost/backend/gpu/mali_kbase_devfreq.c
++++ linux/drivers/gpu/arm/bifrost/backend/gpu/mali_kbase_devfreq.c
+@@ -177,15 +177,15 @@ int kbase_devfreq_opp_helper(struct dev_
+ 			ret = regulator_set_voltage(mem_reg,
+ 						    new_supply_mem->u_volt,
+ 						    INT_MAX);
+-			if (ret) {
+-				dev_err(dev, "failed to set volt %lu uV for mem reg\n",
+-					new_supply_mem->u_volt);
++			if (ret < 0) {
++				dev_err(dev, "failed to set bigger volt %lu uV for mem reg, ret:%d\n",
++					new_supply_mem->u_volt,  ret);
+ 				goto restore_voltage;
+ 			}
+ 		}
+ 		ret = regulator_set_voltage(vdd_reg, new_supply_vdd->u_volt,
+ 					    INT_MAX);
+-		if (ret) {
++		if (ret < 0) {
+ 			dev_err(dev, "failed to set volt %lu uV for vdd reg\n",
+ 				new_supply_vdd->u_volt);
+ 			goto restore_voltage;
+@@ -208,7 +208,7 @@ int kbase_devfreq_opp_helper(struct dev_
+ 		}
+ 		ret = regulator_set_voltage(vdd_reg, new_supply_vdd->u_volt,
+ 					    INT_MAX);
+-		if (ret) {
++		if (ret < 0) {
+ 			dev_err(dev, "failed to set volt %lu uV for vdd reg\n",
+ 				new_supply_vdd->u_volt);
+ 			goto restore_freq;
+@@ -217,9 +217,9 @@ int kbase_devfreq_opp_helper(struct dev_
+ 			ret = regulator_set_voltage(mem_reg,
+ 						    new_supply_mem->u_volt,
+ 						    INT_MAX);
+-			if (ret) {
+-				dev_err(dev, "failed to set volt %lu uV for mem reg\n",
+-					new_supply_mem->u_volt);
++			if (ret < 0) {
++				dev_err(dev, "failed to set volt %lu uV for mem reg, ret:%d\n",
++					new_supply_mem->u_volt, ret);
+ 				goto restore_voltage;
+ 			}
+ 		}
+Index: linux/drivers/cpufreq/rockchip-cpufreq.c
+===================================================================
+--- linux.orig/drivers/cpufreq/rockchip-cpufreq.c
++++ linux/drivers/cpufreq/rockchip-cpufreq.c
+@@ -12,7 +12,6 @@
+  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  * GNU General Public License for more details.
+  */
+-
+ #include <linux/clk.h>
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
+@@ -425,10 +424,12 @@ static int rockchip_cpufreq_set_volt(str
+ 	ret = regulator_set_voltage_triplet(reg, supply->u_volt_min,
+ 					    supply->u_volt, supply->u_volt_max);
+ 	if (ret)
+-		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu uV): %d\n",
++		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu uV): %d, reg_name:%s\n",
+ 			__func__, supply->u_volt_min, supply->u_volt,
+-			supply->u_volt_max, ret);
+-
++			supply->u_volt_max, ret, reg_name);
++  //workaround for fydetab resume issue.
++  if (ret == -13)
++    return 0;
+ 	return ret;
+ }
+ 

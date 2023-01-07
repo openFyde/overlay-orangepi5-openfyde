@@ -1,0 +1,21 @@
+Index: linux/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile
+===================================================================
+--- linux.orig/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile
++++ linux/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile
+@@ -10,14 +10,14 @@ CONFIG_BCMDHD ?= m
+ 
+ CONFIG_BCMDHD_OOB := y
+ #CONFIG_BCMDHD_CUSB := y
+-#CONFIG_BCMDHD_NO_POWER_OFF := y
++CONFIG_BCMDHD_NO_POWER_OFF := y
+ CONFIG_BCMDHD_PROPTXSTATUS := y
+ CONFIG_BCMDHD_AG := y
+ CONFIG_DHD_USE_STATIC_BUF := y
+ #CONFIG_BCMDHD_STATIC_BUF_IN_DHD := y
+ CONFIG_BCMDHD_ANDROID_VERSION := 12
+ CONFIG_BCMDHD_AUTO_SELECT := y
+-CONFIG_BCMDHD_DEBUG := y
++#CONFIG_BCMDHD_DEBUG := y
+ #CONFIG_BCMDHD_TIMESTAMP := y
+ #CONFIG_BCMDHD_WAPI := y
+ #CONFIG_BCMDHD_RANDOM_MAC := y

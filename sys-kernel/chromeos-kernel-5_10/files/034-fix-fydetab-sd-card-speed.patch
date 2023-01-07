@@ -1,0 +1,46 @@
+Index: linux/arch/arm64/boot/dts/rockchip/rk3588s-12c.dtsi
+===================================================================
+--- linux.orig/arch/arm64/boot/dts/rockchip/rk3588s-12c.dtsi
++++ linux/arch/arm64/boot/dts/rockchip/rk3588s-12c.dtsi
+@@ -428,6 +428,7 @@
+   max-frequency = <150000000>;
+   no-sdio;
+   no-mmc;
++  bus-width = <4>;
+   cap-sd-highspeed;
+   cap-mmc-highspeed;
+  // clock-frequency = <100000000>;
+Index: linux/drivers/soc/rockchip/Kconfig
+===================================================================
+--- linux.orig/drivers/soc/rockchip/Kconfig
++++ linux/drivers/soc/rockchip/Kconfig
+@@ -268,4 +268,9 @@ config RK_MEMBLOCK_PROCFS
+ 	  Extend memblock procfs to show size of each memblock, and shows the
+ 	  result of total size by KiB format.
+ 
++config ROCKCHIP_FYDETAB_GRF
++	bool "initialize grf with specific values on FydeTab"
++	default n
++	help
++	  If unsure, say n.
+ endif
+Index: linux/drivers/soc/rockchip/grf.c
+===================================================================
+--- linux.orig/drivers/soc/rockchip/grf.c
++++ linux/drivers/soc/rockchip/grf.c
+@@ -229,10 +229,15 @@ static const struct rockchip_grf_info rk
+ 	.num_values = ARRAY_SIZE(rk3399_defaults),
+ };
+ 
++#define RK3588_SYS_GRF_SOC_CON6 	0x0318
+ #define RK3588_SYS_GRF_SOC_CON7		0x031c
+ 
+ static const struct rockchip_grf_value rk3588_sys_grf_defaults[] __initconst = {
+ 	{ "Connect EDP hpd to IO", RK3588_SYS_GRF_SOC_CON7, HIWORD_UPDATE(0x3, 0x3, 14) },
++#ifdef CONFIG_ROCKCHIP_FYDETAB_GRF
++	/* Without this, MiscroSD card won't work normally with bus width 4 */
++	{ "jtag switching", RK3588_SYS_GRF_SOC_CON6, HIWORD_UPDATE(0x0, 0x1, 14) },
++#endif
+ };
+ 
+ static const struct rockchip_grf_info rk3588_sys_grf __initconst = {

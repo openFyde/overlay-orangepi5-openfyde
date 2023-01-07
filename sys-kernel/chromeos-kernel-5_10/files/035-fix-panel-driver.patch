@@ -1,0 +1,130 @@
+Index: linux/arch/arm64/boot/dts/rockchip/rk3588s-12c.dtsi
+===================================================================
+--- linux.orig/arch/arm64/boot/dts/rockchip/rk3588s-12c.dtsi
++++ linux/arch/arm64/boot/dts/rockchip/rk3588s-12c.dtsi
+@@ -176,15 +176,36 @@
+     };
+   };
+ 
+-	vcc_lcd_en: vcc-lcd-en {
+-		compatible = "regulator-fixed";
+-		regulator-name = "vcc_lcd_en";
+-		regulator-boot-on;
+-		enable-active-high;
+-		gpio = <&gpio4 RK_PA3 GPIO_ACTIVE_HIGH>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&vcc_lcd_en_pin>;
+-	};
++  vcc_lcd_en: vcc-lcd-en {
++    compatible = "regulator-fixed";
++    regulator-name = "vcc_lcd_en";
++    enable-active-high;
++    gpio = <&gpio4 RK_PA3 GPIO_ACTIVE_HIGH>;
++    pinctrl-names = "default";
++    pinctrl-0 = <&vcc_lcd_en_pin>;
++  };
++
++  vcc_avdd: vcc-avdd {
++    compatible = "regulator-fixed";
++    regulator-name = "vcc_avdd";
++    enable-active-high;
++    gpio = <&gpio3 RK_PA7 GPIO_ACTIVE_HIGH>;
++    pinctrl-names = "default";
++    startup-delay-us = <3>;
++    pinctrl-0 = <&avdd_lcd_gpio>;
++    vin-supply = <&vcc_lcd_en>;
++  };
++
++  vcc_avee: vcc-avee {
++    compatible = "regulator-fixed";
++    regulator-name = "vcc_avee";
++    enable-active-high;
++    gpio = <&gpio3 RK_PA6 GPIO_ACTIVE_HIGH>;
++    pinctrl-names = "default";
++    startup-delay-us = <3>;
++    pinctrl-0 = <&avee_lcd_gpio>;
++    vin-supply = <&vcc_avdd>;
++  };
+ 
+ 	finger_power_test: finger-power-test {
+ 		compatible = "regulator-fixed";
+Index: linux/arch/arm64/boot/dts/rockchip/rk3588s-tablet-12c.dtsi
+===================================================================
+--- linux.orig/arch/arm64/boot/dts/rockchip/rk3588s-tablet-12c.dtsi
++++ linux/arch/arm64/boot/dts/rockchip/rk3588s-tablet-12c.dtsi
+@@ -282,16 +282,14 @@
+ 	rockchip,lane-rate = <676000>;
+ 	dsi0_panel: panel@0 {
+ 		status = "okay";
+-		compatible = "simple-panel-dsi-fyde";
++		compatible = "simple-panel-dsi";
+ 		reg = <0>;
+ 		backlight = <&backlight>;
+-		power-supply = <&vcc_lcd_en>;
+-		//enable-gpios = <&gpio4 RK_PA3 GPIO_ACTIVE_HIGH>;
+-		avdd-gpios = <&gpio3 RK_PA7 GPIO_ACTIVE_HIGH>;
+-		avee-gpios = <&gpio3 RK_PA6 GPIO_ACTIVE_HIGH>;
++		power-supply = <&vcc_avee>;
+ 		reset-gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_HIGH>;
++    reset-enable-combined;
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&avdd_lcd_gpio &avee_lcd_gpio &lcd_rst_gpio>;
++		pinctrl-0 = <&lcd_rst_gpio>;
+ 		reset-delay-ms = <120>;
+ 		enable-delay-ms = <120>;
+ 		prepare-delay-ms = <120>;
+@@ -994,7 +992,8 @@
+ };
+ 
+ &route_dsi0 {
+-	status = "disabled";
++  u-boot-status = "disabled";
++  status = "okay";
+ 	connect = <&vp2_out_dsi0>;
+ };
+ 
+Index: linux/drivers/gpu/drm/panel/panel-simple.c
+===================================================================
+--- linux.orig/drivers/gpu/drm/panel/panel-simple.c
++++ linux/drivers/gpu/drm/panel/panel-simple.c
+@@ -133,6 +133,7 @@ struct panel_simple {
+ 	bool enabled;
+ 	bool power_invert;
+ 	bool no_hpd;
++  bool reset_enable_combined;
+ 
+ 	const struct panel_desc *desc;
+ 
+@@ -461,8 +462,10 @@ static int panel_simple_unprepare(struct
+ 	if (p->desc->exit_seq)
+ 		if (p->dsi)
+ 			panel_simple_xfer_dsi_cmd_seq(p, p->desc->exit_seq);
+-
+-	gpiod_direction_output(p->reset_gpio, 1);
++  if (p->reset_enable_combined)
++    gpiod_direction_output(p->reset_gpio, 0);
++  else
++	  gpiod_direction_output(p->reset_gpio, 1);
+ 	gpiod_direction_output(p->enable_gpio, 0);
+ 
+ 	panel_simple_regulator_disable(p);
+@@ -551,6 +554,11 @@ static int panel_simple_prepare(struct d
+ 
+ 	gpiod_direction_output(p->reset_gpio, 0);
+ 
++  if (p->reset_enable_combined) {
++    msleep(5);
++    gpiod_direction_output(p->reset_gpio, 1);
++  }
++
+ 	if (p->desc->delay.init)
+ 		msleep(p->desc->delay.init);
+ 
+@@ -825,6 +833,7 @@ static int panel_simple_probe(struct dev
+ 	}
+ 
+ 	panel->power_invert = of_property_read_bool(dev->of_node, "power-invert");
++  panel->reset_enable_combined = of_property_read_bool(dev->of_node, "reset-enable-combined");
+ 
+ 	ddc = of_parse_phandle(dev->of_node, "ddc-i2c-bus", 0);
+ 	if (ddc) {

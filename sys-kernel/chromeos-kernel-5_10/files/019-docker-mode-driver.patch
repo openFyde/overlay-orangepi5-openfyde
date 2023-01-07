@@ -1,0 +1,246 @@
+Index: linux/drivers/usb/misc/Kconfig
+===================================================================
+--- linux.orig/drivers/usb/misc/Kconfig
++++ linux/drivers/usb/misc/Kconfig
+@@ -89,7 +89,7 @@ config USB_CYTHERM
+ 	  Say Y here if you want to connect a Cypress USB thermometer
+ 	  device to your computer's USB port. This device is also known
+ 	  as the Cypress USB Starter kit or demo board. The Elektor
+-	  magazine published a modified version of this device in issue 
++	  magazine published a modified version of this device in issue
+ 	  #291.
+ 
+ 	  To compile this driver as a module, choose M here: the
+@@ -275,3 +275,8 @@ config USB_CHAOSKEY
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called chaoskey.
++
++config USB_KBD_DOCKER_EMULATOR
++  tristate "Set tablet mode by any usb keyboard"
++  help
++    Say Y if you want to add a docker event when plug a usb keyboard.
+Index: linux/drivers/usb/misc/Makefile
+===================================================================
+--- linux.orig/drivers/usb/misc/Makefile
++++ linux/drivers/usb/misc/Makefile
+@@ -31,3 +31,4 @@ obj-$(CONFIG_USB_CHAOSKEY)		+= chaoskey.
+ 
+ obj-$(CONFIG_USB_SISUSBVGA)		+= sisusbvga/
+ obj-$(CONFIG_USB_LINK_LAYER_TEST)	+= lvstest.o
++obj-$(CONFIG_USB_KBD_DOCKER_EMULATOR) += fyde-vdtb.o
+Index: linux/drivers/usb/misc/fyde-vdtb.c
+===================================================================
+--- /dev/null
++++ linux/drivers/usb/misc/fyde-vdtb.c
+@@ -0,0 +1,210 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ *  Fydeos detachable emulator driver
++ *
++ *  Copyright (C) 2019 Yang Tsao <yang@fydeos.io>
++ */
++#include <linux/input.h>
++#include <linux/miscdevice.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/uaccess.h>
++#include <linux/notifier.h>
++#include <linux/usb.h>
++#include <linux/pm_domain.h>
++#include <uapi/linux/hid.h>
++
++#define VDTB_DEV_NAME "fyde-vdtb"
++#define VDTB_DEVICE_MINOR  MISC_DYNAMIC_MINOR
++#define VDTB_DEVICE_ID "vdtb"
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Yang Tsao <yang@fydeos.io>");
++MODULE_DESCRIPTION("Detachable device driver Emulator");
++
++struct vdtb_priv {
++  atomic_t in_suspend;
++  struct input_dev *input_dev;
++  struct notifier_block nb;
++};
++
++//static int vdtb_open(struct inode *inode, struct file *file) {return 0;}
++static int vdtb_release(struct inode *inode, struct file *file) {return 0;}
++
++static inline int is_usb_device(const struct device *dev) {
++  return !strcmp(dev->type->name, "usb_device");
++}
++
++void set_tablet_mode(struct vdtb_priv *priv, bool mode) {
++  input_report_switch(priv->input_dev, SW_TABLET_MODE, mode);
++  input_sync(priv->input_dev);
++}
++
++static ssize_t vdtb_read(struct file *file, char *buf, size_t count, loff_t *ppos) {
++  return -1;
++}
++
++static ssize_t vdtb_write(struct file *file, const char *buf, size_t count, loff_t *ppos) {
++  struct miscdevice *vdtb = (struct miscdevice *) file->private_data;
++  struct vdtb_priv *priv = dev_get_drvdata(vdtb->this_device);
++  char tmp_buf[3];
++  unsigned long n;
++  if (count > 3) return -1;
++  n = copy_from_user(tmp_buf, buf, count);
++  if (n) return -1;
++  if (priv) {
++    set_tablet_mode(priv, strncmp(tmp_buf, "1", 1) == 0);
++  }else{
++    return -1;
++  }
++  return count;
++}
++
++static long vdtb_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {return -1;}
++
++struct file_operations vdtb_fops = {
++  .owner = THIS_MODULE,
++  .release = vdtb_release,
++  .read = vdtb_read,
++  .write = vdtb_write,
++  .compat_ioctl = vdtb_ioctl,
++};
++
++int vdtb_suspend(struct device *dev) {
++  struct vdtb_priv *priv = dev_get_drvdata(dev);
++  atomic_set(&priv->in_suspend, 1);
++  dev_info(dev, "enter suspend\n");
++  return 0;
++}
++
++int vdtb_resume(struct device *dev) {
++  struct vdtb_priv *priv = dev_get_drvdata(dev);
++  atomic_set(&priv->in_suspend, 0);
++  dev_info(dev, "quit suspend.\n");
++  return 0;
++}
++
++struct dev_pm_domain pm = {
++  .ops = {
++    .suspend = &vdtb_suspend,
++    .resume = &vdtb_resume,
++  },
++};
++
++static struct miscdevice vdtb_dev = {
++  .minor = VDTB_DEVICE_MINOR,
++  .name = VDTB_DEVICE_ID,
++  .fops = &vdtb_fops,
++};
++
++static bool contains_kbd_interface(const struct usb_device* usb_dev) {
++  struct usb_interface *intf;
++  struct usb_host_interface *interface;
++  int i;
++  if (!is_usb_device(&usb_dev->dev))
++    return false;
++  if (!usb_dev->actconfig)
++    return false;
++  for ( i = 0; i < usb_dev->actconfig->desc.bNumInterfaces; i++) {
++    intf = usb_dev->actconfig->interface[i];
++    if (!intf->cur_altsetting)
++      continue;
++    interface = intf->cur_altsetting;
++    if (interface->desc.bInterfaceSubClass == USB_INTERFACE_SUBCLASS_BOOT &&
++          interface->desc.bInterfaceProtocol== USB_INTERFACE_PROTOCOL_KEYBOARD)
++      return true;
++  }
++  return false;
++}
++
++static int check_usb_kbd(struct usb_device *usb_dev, void *data) {
++  int *kbd_num = (int *)data;
++  if (*kbd_num)
++    return 0;
++  if (contains_kbd_interface(usb_dev))
++    (*kbd_num)++;
++  return 0;
++}
++
++void detect_usb_kbd(struct vdtb_priv *priv) {
++  int kbd_num = 0;
++  usb_for_each_dev(&kbd_num, check_usb_kbd);
++  set_tablet_mode(priv, !kbd_num);
++}
++
++int usb_notifier_nb(struct notifier_block *nb,
++      unsigned long action, void *data) {
++  const struct usb_device *usb_dev = data;
++  struct vdtb_priv *priv = container_of(nb, struct vdtb_priv, nb);
++  if (atomic_read(&priv->in_suspend)) {
++    pr_info("vdtb suspend skip");
++    return 0;
++  }
++  if (action == USB_DEVICE_REMOVE)
++    dev_info(&usb_dev->dev, "is removed");
++  if (action > USB_DEVICE_REMOVE)
++    return 0;
++  if (action == USB_DEVICE_REMOVE) {
++    detect_usb_kbd(priv);
++  }else if (contains_kbd_interface(usb_dev)) {
++    set_tablet_mode(priv, false);
++  }
++  return 0;
++}
++
++void remove_vdtb(void) {
++  struct vdtb_priv *priv;
++  if (!vdtb_dev.this_device)
++    return;
++  priv = (struct vdtb_priv *)dev_get_drvdata(vdtb_dev.this_device);
++  input_unregister_device(priv->input_dev);
++  usb_unregister_notify(&priv->nb);
++  misc_deregister(&vdtb_dev);
++}
++
++int __init init_vdtb_module(void) {
++  int err = 0;
++  struct input_dev *idev;
++  struct vdtb_priv *priv;
++  err = misc_register(&vdtb_dev);
++  if (err)
++    goto error_register;
++	priv = devm_kzalloc(vdtb_dev.this_device, sizeof(*priv), GFP_KERNEL);
++  if (!priv)
++    goto error_alloc;
++  dev_set_drvdata(vdtb_dev.this_device, priv);
++  idev = devm_input_allocate_device(vdtb_dev.this_device);
++  if (!idev)
++    goto error_alloc;
++  idev->name = VDTB_DEV_NAME;
++  idev->id.bustype = BUS_HOST;
++  input_set_capability(idev, EV_MSC, MSC_SCAN);
++  input_set_capability(idev, EV_SW, SW_TABLET_MODE);
++  err = input_register_device(idev);
++  if (err)
++    goto error_alloc;
++  priv->input_dev = idev;
++  detect_usb_kbd(priv);
++  priv->nb.notifier_call = usb_notifier_nb;
++  usb_register_notify(&priv->nb);
++  atomic_set(&priv->in_suspend, 0);
++  dev_pm_domain_set(vdtb_dev.this_device, &pm);
++  dev_info(vdtb_dev.this_device, "device is working.\n");
++  return 0;
++
++error_alloc:
++  remove_vdtb();
++error_register:
++  return err;
++}
++
++void __exit cleanup_vdtb_module(void) {
++  remove_vdtb();
++}
++
++module_init(init_vdtb_module);
++module_exit(cleanup_vdtb_module);
++
++MODULE_AUTHOR("yang@fydeos.io");
++MODULE_DESCRIPTION("Detect tablet mode by usb keyboard");
++MODULE_LICENSE("GPL");

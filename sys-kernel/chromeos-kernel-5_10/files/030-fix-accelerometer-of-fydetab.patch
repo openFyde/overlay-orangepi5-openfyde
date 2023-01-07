@@ -1,0 +1,48 @@
+From 7952eeba35609988a7f1e6edb50cf9d98328eb4e Mon Sep 17 00:00:00 2001
+From: Su Yue <glass@fydeos.io>
+Date: Tue, 13 Sep 2022 11:35:14 +0800
+Subject: [PATCH] Export in_accel_scale of st acceleration devices
+
+Similar to kernel commit 48cceecfa762 ("iio: imu: st_lsm6dsx: make IIO_CHAN_INFO_SCALE shared by type").
+
+Signed-off-by: Su Yue <glass@fydeos.io>
+---
+ drivers/iio/accel/st_accel_core.c     | 6 +++---
+ include/linux/iio/common/st_sensors.h | 1 +
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+Index: linux/drivers/iio/accel/st_accel_core.c
+===================================================================
+--- linux.orig/drivers/iio/accel/st_accel_core.c
++++ linux/drivers/iio/accel/st_accel_core.c
+@@ -75,15 +75,15 @@ static const struct iio_chan_spec st_acc
+ 
+ static const struct iio_chan_spec st_accel_16bit_channels[] = {
+ 	ST_SENSORS_LSM_CHANNELS(IIO_ACCEL,
+-			BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE),
++			BIT(IIO_CHAN_INFO_RAW),
+ 			ST_SENSORS_SCAN_X, 1, IIO_MOD_X, 's', IIO_LE, 16, 16,
+ 			ST_ACCEL_DEFAULT_OUT_X_L_ADDR),
+ 	ST_SENSORS_LSM_CHANNELS(IIO_ACCEL,
+-			BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE),
++			BIT(IIO_CHAN_INFO_RAW),
+ 			ST_SENSORS_SCAN_Y, 1, IIO_MOD_Y, 's', IIO_LE, 16, 16,
+ 			ST_ACCEL_DEFAULT_OUT_Y_L_ADDR),
+ 	ST_SENSORS_LSM_CHANNELS(IIO_ACCEL,
+-			BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE),
++			BIT(IIO_CHAN_INFO_RAW),
+ 			ST_SENSORS_SCAN_Z, 1, IIO_MOD_Z, 's', IIO_LE, 16, 16,
+ 			ST_ACCEL_DEFAULT_OUT_Z_L_ADDR),
+ 	IIO_CHAN_SOFT_TIMESTAMP(3)
+Index: linux/include/linux/iio/common/st_sensors.h
+===================================================================
+--- linux.orig/include/linux/iio/common/st_sensors.h
++++ linux/include/linux/iio/common/st_sensors.h
+@@ -52,6 +52,7 @@
+ 	.type = device_type, \
+ 	.modified = mod, \
+ 	.info_mask_separate = mask, \
++	.info_mask_shared_by_type = BIT(IIO_CHAN_INFO_SCALE), \
+ 	.info_mask_shared_by_all = BIT(IIO_CHAN_INFO_SAMP_FREQ), \
+ 	.scan_index = index, \
+ 	.channel2 = ch2, \
