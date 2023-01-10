@@ -24,4 +24,8 @@ S="${WORKDIR}"
 src_install() {
     insinto "/etc/init"
     doins ${FILESDIR}/powerd/never-suspend.conf
+    doins ${FILESDIR}/init/auto-change-sata-overlay.conf
+
+    exeinto "/usr/sbin"
+    doexe ${FILESDIR}/scripts/auto_add_sata_overlay.sh
 }
