@@ -27,8 +27,8 @@ echo "distro_bootpart: ${distro_bootpart}"
 
 part uuid ${devtype} ${devnum}:${rootpart} root_uuid
 
-if test -e ${devtype} ${devnum}:1 /unencrypted/Env.txt; then
-	load ${devtype} ${devnum}:1 ${load_addr} /unencrypted/Env.txt
+if test -e ${devtype} ${devnum}:1 /fyde/Env.txt; then
+	load ${devtype} ${devnum}:1 ${load_addr} /fyde/Env.txt
 	env import -t ${load_addr} ${filesize}
 fi
 

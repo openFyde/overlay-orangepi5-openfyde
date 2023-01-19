@@ -28,7 +28,7 @@ index 9fbae9c195b8..ea116a9b2f39 100755
 +
 +get_boot_type()
 +{
-+  cat /mnt/stateful_partition/unencrypted/Env.txt \
++  cat /mnt/stateful_partition/fyde/Env.txt \
 +    | grep -o '^[^#]*' | grep 'overlays=' | grep -q 'ssd-sata'
 +
 +  if [ "$?" -eq "0" ]; then
