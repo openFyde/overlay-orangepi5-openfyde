@@ -13,4 +13,5 @@ m2="$(dd if="$rootdev" bs=1 skip=33586176 count=4 2>/dev/null)"
 
 if [ "$m2" = "SATA" ]; then
     echo overlays=ssd-sata >> /mnt/stateful_partition/unencrypted/Env.txt
+    reboot
 fi

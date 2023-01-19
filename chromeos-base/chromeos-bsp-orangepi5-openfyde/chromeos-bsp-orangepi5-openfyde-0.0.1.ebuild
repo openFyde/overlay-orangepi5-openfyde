@@ -15,6 +15,8 @@ IUSE=""
 
 RDEPEND="
     chromeos-base/orangepi5-firmware
+    sys-boot/orangepi5-loaders
+    chromeos-base/os_install_service
 "
 
 DEPEND="${RDEPEND}"
