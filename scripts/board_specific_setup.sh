@@ -30,7 +30,7 @@ install_boot_scr() {
     "${efi_dir}"
 
   info "Copying /boot/boot.scr.uimg"
-  [ -d "${efi_dir}/boot"] || mkdir "${efi_dir}/boot"
+  [ -d "${efi_dir}/boot" ] || sudo mkdir "${efi_dir}/boot"
   sudo cp "${ROOT}/boot/boot.scr.uimg" "${efi_dir}/boot/"
   sudo umount "${efi_dir}"
   rmdir "${efi_dir}"
