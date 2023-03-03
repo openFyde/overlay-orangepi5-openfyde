@@ -5,8 +5,8 @@ EAPI=7
 # CROS_WORKON_REPO is internal git url example: http://git.xxxx/repo
 CROS_WORKON_REPO="git@github.com:orangepi-xunlong"
 # CROS_WORKON_COMMIT is internel kernel commit
-CROS_WORKON_COMMIT="161606b049488da100e5d7ec95c8997d3b59b20d"
-# CROS_WORKON_REPO + CROS_WORKON_PROJECT will be the whole url for rockchip kernel example: http://git/xxxx/repo/rk-kernel
+CROS_WORKON_COMMIT="ca3a7af8c9c04a23e7833c27accd35a0c1555fda"
+
 CROS_WORKON_PROJECT="linux-orangepi"
 # clone the kernel resource to ~/trunk/src/third_party/kernel/v5.10-rockchip to speed up the compiling.
 CROS_WORKON_LOCALNAME="kernel/v5.10-rockchip"
