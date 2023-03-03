@@ -1,0 +1,50 @@
+From 6f7834bab4e0812d99fe9be8b07f3803d4fd901f Mon Sep 17 00:00:00 2001
+From: Fangrui Song <maskray@google.com>
+Date: Fri, 18 Feb 2022 00:12:09 -0800
+Subject: [PATCH] arm64: module: remove (NOLOAD) from linker script
+
+On ELF, (NOLOAD) sets the section type to SHT_NOBITS[1]. It is conceptually
+inappropriate for .plt and .text.* sections which are always
+SHT_PROGBITS.
+
+In GNU ld, if PLT entries are needed, .plt will be SHT_PROGBITS anyway
+and (NOLOAD) will be essentially ignored. In ld.lld, since
+https://reviews.llvm.org/D118840 ("[ELF] Support (TYPE=<value>) to
+customize the output section type"), ld.lld will report a `section type
+mismatch` error. Just remove (NOLOAD) to fix the error.
+
+[1] https://lld.llvm.org/ELF/linker_script.html As of today, "The
+section should be marked as not loadable" on
+https://sourceware.org/binutils/docs/ld/Output-Section-Type.html is
+outdated for ELF.
+
+Tested-by: Nathan Chancellor <nathan@kernel.org>
+Reported-by: Nathan Chancellor <nathan@kernel.org>
+Signed-off-by: Fangrui Song <maskray@google.com>
+Acked-by: Ard Biesheuvel <ardb@kernel.org>
+Link: https://lore.kernel.org/r/20220218081209.354383-1-maskray@google.com
+Signed-off-by: Will Deacon <will@kernel.org>
+---
+ arch/arm64/include/asm/module.lds.h | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm64/include/asm/module.lds.h b/arch/arm64/include/asm/module.lds.h
+index 0b736bff0bdf..ca4c8a46c8c8 100644
+--- a/arch/arm64/include/asm/module.lds.h
++++ b/arch/arm64/include/asm/module.lds.h
+@@ -1,8 +1,9 @@
+ #ifdef CONFIG_ARM64_MODULE_PLTS
+ SECTIONS {
+-	.plt 0 (NOLOAD) : { BYTE(0) }
+-	.init.plt 0 (NOLOAD) : { BYTE(0) }
+-	.text.ftrace_trampoline 0 (NOLOAD) : { BYTE(0) }
++	.plt 0 : { BYTE(0) }
++	.init.plt 0 : { BYTE(0) }
++	.text.ftrace_trampoline 0 : { BYTE(0) }
++
+ 
+ #ifdef CONFIG_CRYPTO_FIPS140
+ 	/*
+-- 
+2.39.2
+
