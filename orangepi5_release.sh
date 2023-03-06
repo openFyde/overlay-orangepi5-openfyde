@@ -91,9 +91,9 @@ fi
 
 
 if [ "$m2" == "nvme" ]; then
-    magic=NVME_MAGIC
+    magic=$NVME_MAGIC
 else
-    magic=SATA_MAGIC
+    magic=$SATA_MAGIC
 fi
 
 echo -n "$magic" | dd of="$target" bs=$SECTOR_SIZE seek="$MAGIC_SECTOR" conv=fdatasync,notrunc
