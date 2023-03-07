@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 shell_lines=102         # Adjust it if the script changes
 version_string=r102-r1
