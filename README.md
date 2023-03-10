@@ -29,9 +29,6 @@ This repository contains the following packages:
 
 <br>
 
-## Notes
- - OpenFyde requires high speed disk IOs, so this overlay only supports NVME/SATA m2 SSDs.
-
 ## About the board `orangepi5-openfyde`
  - This board specifically targets the [Orange Pi 5](http://www.orangepi.org/html/hardWare/computerAndMicrocontrollers/details/Orange-Pi-5.html):
 
