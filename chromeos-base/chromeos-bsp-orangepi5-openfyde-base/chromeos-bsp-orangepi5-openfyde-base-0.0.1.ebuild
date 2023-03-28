@@ -27,6 +27,7 @@ src_install() {
     insinto "/etc/init"
     doins ${FILESDIR}/powerd/never-suspend.conf
     doins ${FILESDIR}/init/auto-change-sata-overlay.conf
+    doins ${FILESDIR}/init/enable-usb2-host-mode.conf
 
     exeinto "/usr/sbin"
     doexe ${FILESDIR}/scripts/auto_add_sata_overlay.sh
