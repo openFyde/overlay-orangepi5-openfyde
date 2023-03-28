@@ -12,7 +12,7 @@ KEYWORDS="*"
 IUSE=""
 
 RDEPEND="
-    virtual/openfyde-board-spec
+  virtual/openfyde-board-spec
 "
 
 DEPEND="${RDEPEND}"

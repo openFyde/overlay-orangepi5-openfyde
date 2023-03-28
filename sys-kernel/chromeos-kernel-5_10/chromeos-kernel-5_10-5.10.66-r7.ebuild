@@ -1,1 +1,0 @@
-chromeos-kernel-5_10-5.10.66.ebuild

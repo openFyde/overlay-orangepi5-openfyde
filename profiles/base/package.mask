@@ -1,6 +1,0 @@
-sys-kernel/chromeos-kernel-5_10::chipset-rk3588
-chromeos-base/inaugural-firmware::inaugural
-sys-boot/rk3588-uboot-script::baseboard-inaugural
-chromeos-base/inaugural-firmware::inaugural
-chromeos-base/os_install_service::baseboard-inaugural
-chromeos-base/os_install_service::chromiumos

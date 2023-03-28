@@ -1,1 +1,0 @@
-rk3588-uboot-script-0.0.1.ebuild
