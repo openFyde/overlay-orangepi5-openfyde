@@ -11,6 +11,6 @@ SLOT="0"
 KEYWORDS="~* arm64 arm"
 IUSE=""
 
-RDEPEND="chromeos-base/chromeos-bsp-orangepi5-openfyde"
+RDEPEND="chromeos-base/chromeos-bsp-orangepi5-openfyde-base"
 
 DEPEND="${RDEPEND}"

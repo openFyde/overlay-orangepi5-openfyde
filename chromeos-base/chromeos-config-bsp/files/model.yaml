@@ -5,7 +5,7 @@
 # This board only supports a single config, defined below, as it is a
 # migrated pre-unibuild device.
 device-config: &device_config
-  name: orangepi5-openfyde
+  name: orangepi5
 
 # Required dunder for chromeos-config to support a single device.
 chromeos:
