@@ -42,7 +42,7 @@ if test "${bootlogo}" = "true"; then setenv consoleargs "bootsplash.bootfile=boo
 # get PARTUUID of first partition on SD/eMMC the boot script was loaded from
 if test "${devtype}" = "mmc"; then part uuid mmc ${devnum}:${rootpart} partuuid; fi
 
-setenv bootargs rootwait ro cros_debug cros_secure cros_legacy console=ttyS2,1500000n8 root=PARTUUID=${root_uuid}
+setenv bootargs rootwait ro cros_debug cros_secure cros_legacy console=ttyS2,1500000n8 root=PARTUUID=${root_uuid} cma=64M usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
 
 #if test "${docker_optimizations}" = "on"; then setenv bootargs "${bootargs} cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory swapaccount=1"; fi
 
