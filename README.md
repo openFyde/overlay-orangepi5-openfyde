@@ -40,7 +40,7 @@ This repository contains the following packages:
     
     
     Orange Pi 5 Plus:
-    ![Orange Pi 5 Plus](http://www.orangepi.org/img/pi5-plus/pi5-plus-9.png)
+    ![Orange Pi 5 Plus](http://www.orangepi.org/img/pi5-plus/pi5-plus-5.png)
 
 <br>
 
