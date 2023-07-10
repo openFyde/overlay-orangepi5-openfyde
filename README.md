@@ -20,12 +20,10 @@ This repository is the overlay for the `orangepi5-openfyde` board, it's part of 
 This repository contains the following packages:
 
 
-| Packages                         | Description        | Reference |
-|----------------------------------|--------------------|-----------|
-| chromeos-base/device-appid       | Setup device appid |           |
-| sys-kernel/chromeos-kernel-5_10  | kernel             |           |
-| chromeos-base/orangepi5-firmware | firmware files     |           |
-| sys-boot/rk3588-uboot-script     | boot cmd           |           |
+| Packages                   | Description              | Reference                                                                                      |
+|----------------------------|--------------------------|------------------------------------------------------------------------------------------------|
+| chromeos-base/device-appid | Setup device appid       |                                                                                                |
+| profiles/base              | packages and inheritance | [overlay-orangepi5-openfyde-base](https://github.com/openFyde/overlay-orangepi5-openfyde-base) |
 
 <br>
 
