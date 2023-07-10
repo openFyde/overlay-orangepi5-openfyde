@@ -36,7 +36,7 @@ This repository contains the following packages:
     ![Orange Pi 5](http://www.orangepi.org/img/orange-pi-5-banner-img.png)
     
     Orange Pi 5B:
-    ![Orange Pi 5B](http://www.orangepi.org/img/pi5-plus/pi5-plus-5.png)
+    ![Orange Pi 5B](http://www.orangepi.org/img/icon-5B-0.png)
     
     
     Orange Pi 5 Plus:
