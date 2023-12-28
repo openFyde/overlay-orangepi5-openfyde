@@ -22,8 +22,8 @@ This repository contains the following packages:
 
 | Packages                   | Description              | Reference                                                                                      |
 |----------------------------|--------------------------|------------------------------------------------------------------------------------------------|
-| chromeos-base/device-appid | Setup device appid       |                                                                                                |
-| profiles/base              | packages and inheritance | [overlay-orangepi5-openfyde-base](https://github.com/openFyde/overlay-orangepi5-openfyde-base) |
+| chromeos-base/device-appid | Setup device appid       | |
+| profiles/base              | packages and inheritance | |
 
 <br>
 

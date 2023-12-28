@@ -1,0 +1,262 @@
+diff --git a/drivers/net/wireless/rtl8811cu/Makefile b/drivers/net/wireless/rtl8811cu/Makefile
+index bbb2de4ac1bf..f8513b0c1a34 100755
+--- a/drivers/net/wireless/rtl8811cu/Makefile
++++ b/drivers/net/wireless/rtl8811cu/Makefile
+@@ -16,7 +16,8 @@ ifeq ($(GCC_VER_49),1)
+ EXTRA_CFLAGS += -Wno-date-time	# Fix compile error && warning on gcc 4.9 and later
+ endif
+ 
+-EXTRA_CFLAGS += -I$(src)/include
++#EXTRA_CFLAGS += -I$(src)/include
++EXTRA_CFLAGS += -I$(srctree)/$(src)/include
+ 
+ EXTRA_LDFLAGS += --strip-debug
+ 
+@@ -228,10 +229,14 @@ _HAL_INTFS_FILES :=	hal/hal_intf.o \
+ 			hal/led/hal_$(HCI_NAME)_led.o
+ 
+ 
+-EXTRA_CFLAGS += -I$(src)/platform
++#EXTRA_CFLAGS += -I$(src)/platform
++#EXTRA_CFLAGS += -I$(S)/drivers/net/wireless/rtl8811cu/platform
++EXTRA_CFLAGS += -I$(srctree)/$(src)/platform
+ _PLATFORM_FILES := platform/platform_ops.o
+ 
+-EXTRA_CFLAGS += -I$(src)/hal/btc
++#EXTRA_CFLAGS += -I$(src)/hal/btc
++#EXTRA_CFLAGS += -I$(S)/drivers/net/wireless/rtl8811cu/hal/btc
++EXTRA_CFLAGS += -I$(srctree)/$(src)/hal/btc
+ 
+ ########### HAL_RTL8188E #################################
+ ifeq ($(CONFIG_RTL8188E), y)
+@@ -256,7 +261,7 @@ EXTRA_CFLAGS += -DCONFIG_RTL8188E
+ 
+ _HAL_INTFS_FILES +=	hal/HalPwrSeqCmd.o \
+ 					hal/$(RTL871X)/Hal8188EPwrSeq.o\
+- 					hal/$(RTL871X)/$(RTL871X)_xmit.o\
++					hal/$(RTL871X)/$(RTL871X)_xmit.o\
+ 					hal/$(RTL871X)/$(RTL871X)_sreset.o
+ 
+ _HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ap.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ap.c
+index c9d90aaa8285..fabdee54b5a4 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ap.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ap.c
+@@ -14,7 +14,7 @@
+  *****************************************************************************/
+ 
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ #ifndef index_mapping_NUM_88E
+ 	#define	index_mapping_NUM_88E	15
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.c
+index bcb97e91c58e..2bd872c54c19 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.c
+@@ -24,7 +24,7 @@
+  *****************************************************************************/
+ 
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ #define CALCULATE_SWINGTALBE_OFFSET(_offset, _direction, _size, _delta_thermal)        \
+ 	do {                                                                           \
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.h b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.h
+index 64e0cc1d9659..284344ceaa1e 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.h
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halphyrf_ce.h
+@@ -26,27 +26,27 @@
+ #ifndef __HALPHYRF_H__
+ #define __HALPHYRF_H__
+ 
+-#include "halrf/halrf_kfree.h"
++#include "../halrf/halrf_kfree.h"
+ #if (RTL8814A_SUPPORT == 1)
+-#include "halrf/rtl8814a/halrf_iqk_8814a.h"
++#include "../halrf/rtl8814a/halrf_iqk_8814a.h"
+ #endif
+ 
+ #if (RTL8822B_SUPPORT == 1)
+-#include "halrf/rtl8822b/halrf_iqk_8822b.h"
++#include "../halrf/rtl8822b/halrf_iqk_8822b.h"
+ #endif
+ 
+ #if (RTL8821C_SUPPORT == 1)
+-#include "halrf/rtl8821c/halrf_iqk_8821c.h"
++#include "../halrf/rtl8821c/halrf_iqk_8821c.h"
+ #endif
+ 
+ #if (RTL8195B_SUPPORT == 1)
+ /* #include "halrf/rtl8195b/halrf.h" */
+-#include "halrf/rtl8195b/halrf_iqk_8195b.h"
+-#include "halrf/rtl8195b/halrf_txgapk_8195b.h"
+-#include "halrf/rtl8195b/halrf_dpk_8195b.h"
++#include "../halrf/rtl8195b/halrf_iqk_8195b.h"
++#include "../halrf/rtl8195b/halrf_txgapk_8195b.h"
++#include "../halrf/rtl8195b/halrf_dpk_8195b.h"
+ #endif
+ 
+-#include "halrf/halrf_powertracking_ce.h"
++#include "../halrf/halrf_powertracking_ce.h"
+ 
+ enum spur_cal_method {
+ 	PLL_RESET,
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.c
+index 30176e4eedd0..e69a16c941ae 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.c
+@@ -29,7 +29,7 @@
+  */
+ 
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ #if (RTL8822B_SUPPORT == 1 || RTL8821C_SUPPORT == 1 || RTL8195B_SUPPORT == 1)
+ void _iqk_page_switch(void *dm_void)
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.h b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.h
+index 097d1d195053..459cd5226530 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.h
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf.h
+@@ -29,7 +29,7 @@
+ /*============================================================*/
+ /*include files*/
+ /*============================================================*/
+-#include "halrf/halrf_psd.h"
++#include "../halrf/halrf_psd.h"
+ #if (RTL8822B_SUPPORT == 1)
+ #include "halrf/rtl8822b/halrf_rfk_init_8822b.h"
+ #endif
+@@ -423,4 +423,4 @@ halrf_config_rfk_with_header_file(void *dm_void, u32 config_type);
+ void halrf_iqk_dbg(void *dm_void);
+ #endif
+ 
+-#endif /*#ifndef __HALRF_H__*/
+\ No newline at end of file
++#endif /*#ifndef __HALRF_H__*/
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_debug.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_debug.c
+index 7ac3127b969a..d9d552b9e387 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_debug.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_debug.c
+@@ -29,7 +29,7 @@
+  */
+ 
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ void halrf_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+ {
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_kfree.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_kfree.c
+index 067a82ad59d2..0ae134392861 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_kfree.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_kfree.c
+@@ -27,7 +27,7 @@
+ /*include files*/
+ /*============================================================*/
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ /*<YuChen, 150720> Add for KFree Feature Requested by RF David.*/
+ /*This is a phydm API*/
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking.c
+index 9feafd4b9a45..a6922faa782c 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking.c
+@@ -28,7 +28,7 @@
+  * ************************************************************
+  */
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ boolean
+ odm_check_power_status(void *dm_void)
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking_ce.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking_ce.c
+index 6d56a0875dfd..992f693b189e 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking_ce.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_powertracking_ce.c
+@@ -29,7 +29,7 @@
+  */
+ 
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ /* ************************************************************
+  * Global var
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_psd.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_psd.c
+index eb42032f5f8b..6330ab3f2f95 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_psd.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_psd.c
+@@ -18,7 +18,7 @@
+  *============================================================
+  */
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ #if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
+ 
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_txgapcal.c b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_txgapcal.c
+index 74a4f41347e9..960ec55d6ccb 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_txgapcal.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/halrf/halrf_txgapcal.c
+@@ -23,7 +23,7 @@
+  *
+  *****************************************************************************/
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ void odm_bub_sort(pu4Byte data, u4Byte n)
+ {
+diff --git a/drivers/net/wireless/rtl8811cu/hal/phydm/txbf/phydm_hal_txbf_api.c b/drivers/net/wireless/rtl8811cu/hal/phydm/txbf/phydm_hal_txbf_api.c
+index eaee774319d5..e87e3ed74e5f 100755
+--- a/drivers/net/wireless/rtl8811cu/hal/phydm/txbf/phydm_hal_txbf_api.c
++++ b/drivers/net/wireless/rtl8811cu/hal/phydm/txbf/phydm_hal_txbf_api.c
+@@ -14,7 +14,7 @@
+  *****************************************************************************/
+ 
+ #include "mp_precomp.h"
+-#include "phydm_precomp.h"
++#include "../phydm_precomp.h"
+ 
+ #if (defined(CONFIG_BB_TXBF_API))
+ #if (RTL8822B_SUPPORT == 1 || RTL8192F_SUPPORT == 1)
+diff --git a/drivers/net/wireless/rtl8811cu/include/ieee80211.h b/drivers/net/wireless/rtl8811cu/include/ieee80211.h
+index 9fb6b4869271..edfa363a60aa 100755
+--- a/drivers/net/wireless/rtl8811cu/include/ieee80211.h
++++ b/drivers/net/wireless/rtl8811cu/include/ieee80211.h
+@@ -1529,9 +1529,16 @@ enum ieee80211_state {
+ 	(((Addr[2]) & 0xff) == 0xff) && (((Addr[3]) & 0xff) == 0xff) && (((Addr[4]) & 0xff) == 0xff) && \
+ 				     (((Addr[5]) & 0xff) == 0xff))
+ #else
++
++#define is_multicast_mac_addr(Addr) is_multicast_ether_addr(Addr)
++#define is_broadcast_mac_addr(Addr) is_broadcast_ether_addr(Addr)
++#define is_zero_mac_addr(Addr) is_zero_ether_addr(Addr)
++
++/*
+ #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0))
+ static inline int is_multicast_mac_addr(const u8 *addr)
+ #else
++
+ extern __inline int is_multicast_mac_addr(const u8 *addr)
+ #endif
+ {
+@@ -1557,6 +1564,10 @@ extern __inline int is_zero_mac_addr(const u8 *addr)
+ 	return ((addr[0] == 0x00) && (addr[1] == 0x00) && (addr[2] == 0x00) &&   \
+ 		(addr[3] == 0x00) && (addr[4] == 0x00) && (addr[5] == 0x00));
+ }
++
++
++
++*/
+ #endif /* PLATFORM_FREEBSD */
+ 
+ #define CFG_IEEE80211_RESERVE_FCS (1<<0)

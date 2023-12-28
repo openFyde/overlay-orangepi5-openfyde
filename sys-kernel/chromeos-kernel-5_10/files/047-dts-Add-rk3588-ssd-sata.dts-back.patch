@@ -1,0 +1,53 @@
+From 09bc75eb68595600e424f0860fb5e879c303650d Mon Sep 17 00:00:00 2001
+From: Su Yue <glass@fydeos.io>
+Date: Sun, 9 Jul 2023 14:25:32 +0800
+Subject: [PATCH] dts: Add rk3588-ssd-sata.dts back
+
+Signed-off-by: Su Yue <glass@fydeos.io>
+---
+ arch/arm64/boot/dts/rockchip/overlay/Makefile |  1 +
+ .../dts/rockchip/overlay/rk3588-ssd-sata.dts  | 20 +++++++++++++++++++
+ 2 files changed, 21 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/rockchip/overlay/rk3588-ssd-sata.dts
+
+diff --git a/arch/arm64/boot/dts/rockchip/overlay/Makefile b/arch/arm64/boot/dts/rockchip/overlay/Makefile
+index 131a70c3a0d6..b66f8d254598 100644
+--- a/arch/arm64/boot/dts/rockchip/overlay/Makefile
++++ b/arch/arm64/boot/dts/rockchip/overlay/Makefile
+@@ -54,6 +54,7 @@ dtbo-$(CONFIG_ARCH_ROCKCHIP) += \
+ 	rk3588-opi5plus-ov13850.dtbo \
+ 	rk3588-opi5plus-ov13855.dtbo \
+ 	rk3588-dmc.dtbo \
++	rk3588-ssd-sata.dtbo \
+ 	rk3588-ssd-sata0.dtbo \
+ 	rk3588-ssd-sata2.dtbo \
+ 	rk3588-hdmirx.dtbo \
+diff --git a/arch/arm64/boot/dts/rockchip/overlay/rk3588-ssd-sata.dts b/arch/arm64/boot/dts/rockchip/overlay/rk3588-ssd-sata.dts
+new file mode 100644
+index 000000000000..2ec37defd318
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/overlay/rk3588-ssd-sata.dts
+@@ -0,0 +1,20 @@
++/dts-v1/;
++/plugin/;
++
++/ {
++	fragment@0 {
++		target = <&sata0>;
++
++		__overlay__ {
++			status = "okay";
++		};
++	};
++
++	fragment@1 {
++		target = <&pcie2x1l2>;
++
++		__overlay__ {
++			status = "disabled";
++		};
++	};
++};
+-- 
+2.41.0
+

@@ -1,0 +1,85 @@
+From 63653e24873dfeba7fae2dea83022728eb3ed2fd Mon Sep 17 00:00:00 2001
+From: Peter Collingbourne <pcc@google.com>
+Date: Wed, 30 Dec 2020 14:19:54 -0800
+Subject: [PATCH] arm64: vdso: disable .eh_frame_hdr via /DISCARD/ instead of
+ --no-eh-frame-hdr
+
+Currently with ld.lld we emit an empty .eh_frame_hdr section (and a
+corresponding program header) into the vDSO. With ld.bfd the section
+is not emitted but the program header is, with p_vaddr set to 0. This
+can lead to unwinders attempting to interpret the data at whichever
+location the program header happens to point to as an unwind info
+header. This happens to be mostly harmless as long as the byte at
+that location (interpreted as a version number) has a value other
+than 1, causing both libgcc and LLVM libunwind to ignore the section
+(in libunwind's case, after printing an error message to stderr),
+but it could lead to worse problems if the byte happened to be 1 or
+the program header points to non-readable memory (e.g. if the empty
+section was placed at a page boundary).
+
+Instead of disabling .eh_frame_hdr via --no-eh-frame-hdr (which
+also has the downside of being unsupported by older versions of GNU
+binutils), disable it by discarding the section, and stop emitting
+the program header that points to it.
+
+I understand that we intend to emit valid unwind info for the vDSO
+at some point. Once that happens this patch can be reverted.
+
+Signed-off-by: Peter Collingbourne <pcc@google.com>
+Acked-by: Ard Biesheuvel <ardb@kernel.org>
+Acked-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Link: https://linux-review.googlesource.com/id/If745fd9cadcb31b4010acbf5693727fe111b0863
+Link: https://lore.kernel.org/r/20201230221954.2007257-1-pcc@google.com
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ arch/arm64/kernel/vdso/Makefile   | 3 +--
+ arch/arm64/kernel/vdso/vdso.lds.S | 5 +----
+ 2 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/arch/arm64/kernel/vdso/Makefile b/arch/arm64/kernel/vdso/Makefile
+index 5865ab874e28..47cf442bbdf7 100644
+--- a/arch/arm64/kernel/vdso/Makefile
++++ b/arch/arm64/kernel/vdso/Makefile
+@@ -24,8 +24,7 @@ btildflags-$(CONFIG_ARM64_BTI_KERNEL) += -z force-bti
+ # routines, as x86 does (see 6f121e548f83 ("x86, vdso: Reimplement vdso.so
+ # preparation in build-time C")).
+ ldflags-y := -shared -nostdlib -soname=linux-vdso.so.1 --hash-style=sysv	\
+-	     -Bsymbolic $(call ld-option, --no-eh-frame-hdr) --build-id=sha1 -n	\
+-	     $(btildflags-y) -T
++	     -Bsymbolic --build-id=sha1 -n $(btildflags-y) -T
+ 
+ ccflags-y := -fno-common -fno-builtin -fno-stack-protector -ffixed-x18
+ ccflags-y += -DDISABLE_BRANCH_PROFILING -DBUILD_VDSO
+diff --git a/arch/arm64/kernel/vdso/vdso.lds.S b/arch/arm64/kernel/vdso/vdso.lds.S
+index b840ab1b705c..a5e61e09ea92 100644
+--- a/arch/arm64/kernel/vdso/vdso.lds.S
++++ b/arch/arm64/kernel/vdso/vdso.lds.S
+@@ -47,9 +47,6 @@ SECTIONS
+ 	PROVIDE (_etext = .);
+ 	PROVIDE (etext = .);
+ 
+-	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
+-	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
+-
+ 	.dynamic	: { *(.dynamic) }		:text	:dynamic
+ 
+ 	.rodata		: { *(.rodata*) }		:text
+@@ -60,6 +57,7 @@ SECTIONS
+ 	/DISCARD/	: {
+ 		*(.data .data.* .gnu.linkonce.d.* .sdata*)
+ 		*(.bss .sbss .dynbss .dynsbss)
++		*(.eh_frame .eh_frame_hdr)
+ 	}
+ }
+ 
+@@ -72,7 +70,6 @@ PHDRS
+ 	text		PT_LOAD		FLAGS(5) FILEHDR PHDRS; /* PF_R|PF_X */
+ 	dynamic		PT_DYNAMIC	FLAGS(4);		/* PF_R */
+ 	note		PT_NOTE		FLAGS(4);		/* PF_R */
+-	eh_frame_hdr	PT_GNU_EH_FRAME;
+ }
+ 
+ /*
+-- 
+2.40.0
+

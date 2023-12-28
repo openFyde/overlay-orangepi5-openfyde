@@ -1,0 +1,22 @@
+Index: linux/drivers/gpu/arm/bifrost/platform/rk/mali_kbase_config_rk.c
+===================================================================
+--- linux.orig/drivers/gpu/arm/bifrost/platform/rk/mali_kbase_config_rk.c
++++ linux/drivers/gpu/arm/bifrost/platform/rk/mali_kbase_config_rk.c
+@@ -111,7 +111,7 @@ static void rk_pm_power_off_delay_work(s
+ 	}
+ 
+ 	platform->is_powered = false;
+-	wake_unlock(&platform->wake_lock);
++	//wake_unlock(&platform->wake_lock);
+ 
+ 	mutex_unlock(&platform->lock);
+ }
+@@ -284,7 +284,7 @@ static int rk_pm_callback_power_on(struc
+ 	rockchip_monitor_volt_adjust_unlock(kbdev->mdev_info);
+ 
+ 	platform->is_powered = true;
+-	wake_lock(&platform->wake_lock);
++	//wake_lock(&platform->wake_lock);
+ 
+ out:
+ 	mutex_unlock(&platform->lock);

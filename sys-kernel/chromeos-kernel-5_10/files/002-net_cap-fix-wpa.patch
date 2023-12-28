@@ -1,0 +1,260 @@
+Index: linux/include/net/netns/core.h
+===================================================================
+--- linux.orig/include/net/netns/core.h
++++ linux/include/net/netns/core.h
+@@ -10,6 +10,7 @@ struct netns_core {
+ 	struct ctl_table_header	*sysctl_hdr;
+ 
+ 	int	sysctl_somaxconn;
++  int sysctl_android_paranoid;
+ 
+ #ifdef CONFIG_PROC_FS
+ 	int __percpu *sock_inuse;
+Index: linux/include/net/sock.h
+===================================================================
+--- linux.orig/include/net/sock.h
++++ linux/include/net/sock.h
+@@ -2669,6 +2669,8 @@ bool sk_ns_capable(const struct sock *sk
+ 		   struct user_namespace *user_ns, int cap);
+ bool sk_capable(const struct sock *sk, int cap);
+ bool sk_net_capable(const struct sock *sk, int cap);
++bool inet_sk_allowed(struct net *net, gid_t gid);
++bool android_ns_capable(struct net *net, int cap);
+ 
+ void sk_get_meminfo(const struct sock *sk, u32 *meminfo);
+ 
+Index: linux/net/core/sock.c
+===================================================================
+--- linux.orig/net/core/sock.c
++++ linux/net/core/sock.c
+@@ -114,6 +114,7 @@
+ #include <linux/memcontrol.h>
+ #include <linux/prefetch.h>
+ #include <linux/compat.h>
++#include <linux/android_aid.h>
+ 
+ #include <linux/uaccess.h>
+ 
+@@ -193,6 +194,40 @@ bool sk_net_capable(const struct sock *s
+ }
+ EXPORT_SYMBOL(sk_net_capable);
+ 
++static bool in_android_group(struct user_namespace *user, gid_t gid)
++{
++  kgid_t kgid = make_kgid(user, gid);
++
++  if (!gid_valid(kgid))
++    return false;
++  return in_egroup_p(kgid);
++}
++
++bool inet_sk_allowed(struct net *net, gid_t gid)
++{
++  if (!net->core.sysctl_android_paranoid ||
++      ns_capable(net->user_ns, CAP_NET_RAW))
++    return true;
++  return in_android_group(net->user_ns, gid);
++}
++EXPORT_SYMBOL(inet_sk_allowed);
++
++bool android_ns_capable(struct net *net, int cap)
++{
++  if (ns_capable(net->user_ns, cap))
++    return true;
++  if (!net->core.sysctl_android_paranoid)
++    return false;
++  if (cap == CAP_NET_RAW &&
++      in_android_group(net->user_ns, AID_NET_RAW))
++    return true;
++  if (cap == CAP_NET_ADMIN &&
++      in_android_group(net->user_ns, AID_NET_ADMIN))
++    return true;
++  return false;
++}
++EXPORT_SYMBOL(android_ns_capable);
++
+ /*
+  * Each address family might have different locking rules, so we have
+  * one slock key per address family and separate keys for internal and
+@@ -565,7 +600,7 @@ static int sock_bindtoindex_locked(struc
+ 
+ 	/* Sorry... */
+ 	ret = -EPERM;
+-	if (sk->sk_bound_dev_if && !ns_capable(net->user_ns, CAP_NET_RAW))
++	if (sk->sk_bound_dev_if && !android_ns_capable(net, CAP_NET_RAW))
+ 		goto out;
+ 
+ 	ret = -EINVAL;
+Index: linux/net/core/sysctl_net_core.c
+===================================================================
+--- linux.orig/net/core/sysctl_net_core.c
++++ linux/net/core/sysctl_net_core.c
+@@ -576,6 +576,15 @@ static struct ctl_table net_core_table[]
+ };
+ 
+ static struct ctl_table netns_core_table[] = {
++  {
++    .procname = "android_paranoid",
++    .data   = &init_net.core.sysctl_android_paranoid,
++    .maxlen   = sizeof(int),
++    .mode   = 0644,
++    .extra1   = SYSCTL_ZERO,
++    .extra2   = SYSCTL_ONE,
++    .proc_handler = proc_dointvec_minmax
++  },
+ 	{
+ 		.procname	= "somaxconn",
+ 		.data		= &init_net.core.sysctl_somaxconn,
+@@ -604,17 +613,20 @@ static __net_init int sysctl_core_net_in
+ {
+ 	struct ctl_table *tbl;
+ 
++  net->core.sysctl_android_paranoid = 0;
++
+ 	tbl = netns_core_table;
+ 	if (!net_eq(net, &init_net)) {
+ 		tbl = kmemdup(tbl, sizeof(netns_core_table), GFP_KERNEL);
+ 		if (tbl == NULL)
+ 			goto err_dup;
+ 
+-		tbl[0].data = &net->core.sysctl_somaxconn;
++    tbl[0].data = &net->core.sysctl_android_paranoid;
++		tbl[1].data = &net->core.sysctl_somaxconn;
+ 
+ 		/* Don't export any sysctls to unprivileged users */
+ 		if (net->user_ns != &init_user_ns) {
+-			tbl[0].procname = NULL;
++			tbl[1].procname = NULL;
+ 		}
+ 	}
+ 
+Index: linux/include/linux/android_aid.h
+===================================================================
+--- /dev/null
++++ linux/include/linux/android_aid.h
+@@ -0,0 +1,28 @@
++/* include/linux/android_aid.h
++ *
++ * Copyright (C) 2008 Google, Inc.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#ifndef _LINUX_ANDROID_AID_H
++#define _LINUX_ANDROID_AID_H
++
++/* AIDs that the kernel treats differently */
++#define AID_OBSOLETE_000 (3001)  /* was NET_BT_ADMIN */
++#define AID_OBSOLETE_001 (3002)  /* was NET_BT */
++#define AID_INET         (3003)
++#define AID_NET_RAW      (3004)
++#define AID_NET_ADMIN    (3005)
++#define AID_NET_BW_STATS (3006)  /* read bandwidth statistics */
++#define AID_NET_BW_ACCT  (3007)  /* change bandwidth statistics accounting */
++
++#endif
+Index: linux/net/ipv4/af_inet.c
+===================================================================
+--- linux.orig/net/ipv4/af_inet.c
++++ linux/net/ipv4/af_inet.c
+@@ -85,6 +85,7 @@
+ #include <linux/netfilter_ipv4.h>
+ #include <linux/random.h>
+ #include <linux/slab.h>
++#include <linux/android_aid.h>
+ 
+ #include <linux/uaccess.h>
+ 
+@@ -259,6 +260,9 @@ static int inet_create(struct net *net,
+ 	if (protocol < 0 || protocol >= IPPROTO_MAX)
+ 		return -EINVAL;
+ 
++  if (!inet_sk_allowed(net, AID_INET))
++    return -EACCES;
++
+ 	sock->state = SS_UNCONNECTED;
+ 
+ 	/* Look for the requested type/protocol pair. */
+@@ -308,7 +312,7 @@ lookup_protocol:
+ 
+ 	err = -EPERM;
+ 	if (sock->type == SOCK_RAW && !kern &&
+-	    !ns_capable(net->user_ns, CAP_NET_RAW))
++	    !android_ns_capable(net, CAP_NET_RAW))
+ 		goto out_rcu_unlock;
+ 
+ 	sock->ops = answer->ops;
+Index: linux/net/ipv6/af_inet6.c
+===================================================================
+--- linux.orig/net/ipv6/af_inet6.c
++++ linux/net/ipv6/af_inet6.c
+@@ -39,6 +39,7 @@
+ #include <linux/netdevice.h>
+ #include <linux/icmpv6.h>
+ #include <linux/netfilter_ipv6.h>
++#include <linux/android_aid.h>
+ 
+ #include <net/ip.h>
+ #include <net/ipv6.h>
+@@ -122,6 +123,9 @@ static int inet6_create(struct net *net,
+ 	if (protocol < 0 || protocol >= IPPROTO_MAX)
+ 		return -EINVAL;
+ 
++  if (!inet_sk_allowed(net, AID_INET))
++    return -EACCES;
++
+ 	/* Look for the requested type/protocol pair. */
+ lookup_protocol:
+ 	err = -ESOCKTNOSUPPORT;
+@@ -169,7 +173,7 @@ lookup_protocol:
+ 
+ 	err = -EPERM;
+ 	if (sock->type == SOCK_RAW && !kern &&
+-	    !ns_capable(net->user_ns, CAP_NET_RAW))
++	    !android_ns_capable(net, CAP_NET_RAW))
+ 		goto out_rcu_unlock;
+ 
+ 	sock->ops = answer->ops;
+Index: linux/net/core/dev_ioctl.c
+===================================================================
+--- linux.orig/net/core/dev_ioctl.c
++++ linux/net/core/dev_ioctl.c
+@@ -495,7 +495,7 @@ int dev_ioctl(struct net *net, unsigned
+ 	case SIOCBRADDIF:
+ 	case SIOCBRDELIF:
+ 	case SIOCSHWTSTAMP:
+-		if (!ns_capable(net->user_ns, CAP_NET_ADMIN))
++		if (!android_ns_capable(net, CAP_NET_ADMIN))
+ 			return -EPERM;
+ 		fallthrough;
+ 	case SIOCBONDSLAVEINFOQUERY:
+Index: linux/net/ipv4/devinet.c
+===================================================================
+--- linux.orig/net/ipv4/devinet.c
++++ linux/net/ipv4/devinet.c
+@@ -1045,7 +1045,7 @@ int devinet_ioctl(struct net *net, unsig
+ 
+ 	case SIOCSIFFLAGS:
+ 		ret = -EPERM;
+-		if (!ns_capable(net->user_ns, CAP_NET_ADMIN))
++		if (!android_ns_capable(net, CAP_NET_ADMIN))
+ 			goto out;
+ 		break;
+ 	case SIOCSIFADDR:	/* Set interface address (and family) */
+@@ -1053,7 +1053,7 @@ int devinet_ioctl(struct net *net, unsig
+ 	case SIOCSIFDSTADDR:	/* Set the destination address */
+ 	case SIOCSIFNETMASK: 	/* Set the netmask for the interface */
+ 		ret = -EPERM;
+-		if (!ns_capable(net->user_ns, CAP_NET_ADMIN))
++		if (!android_ns_capable(net, CAP_NET_ADMIN))
+ 			goto out;
+ 		ret = -EINVAL;
+ 		if (sin->sin_family != AF_INET)
