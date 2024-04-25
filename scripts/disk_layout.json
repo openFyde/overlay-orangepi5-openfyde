@@ -1,0 +1,76 @@
+{
+  "_comment": "See http://www.chromium.org/chromium-os/building-chromium-os/disk-layout-format",
+  "parent": "legacy_disk_layout.json",
+  "layouts":{
+    "common":[
+      {
+        "num": 11,
+        "size": "32 MiB"
+      },
+      {
+        "num": 2,
+        "size": "32 MiB"
+      },
+      {
+        "num": 4,
+        "size": "32 MiB"
+      },
+      {
+        "num": 12,
+        "size": "64 MiB"
+      },
+      {
+        "num": 5,
+        "size": "2724 MiB"
+      },
+      {
+        "num": 3,
+        # uboot of orangepi seems not support ext4 well
+        # It causes boot failure after OTA:
+        # "fs_devread read outside partition 6700108881503686656"
+        "fs_format": "ext4",
+        "fs_options": {
+          "ext4": "-O ^64bit,^metadata_csum,^orphan_file"
+        },
+        # caculate: size = fs_size / 64  + 200 (M)
+        # There are two reasons for 200M size:
+        # 1. We store verity hash and a boot cache in this partition too.
+        # 2. We intentionally keep the filesystem size low to catch bloat.
+        "fs_size":"2484 MiB",
+        "size":"2724 MiB"
+      }
+    ],
+    "usb":[
+      {
+        # Slot B rootfs, unused on USB, but pad to 2M.
+        # installation will expand this to size from base.
+        "num": 5,
+        "size": "2724 MiB"
+      },
+      {
+        "num": 3,
+        "fs_size":"2700 MiB",
+        "size": "2724 MiB"
+      }
+    ],
+    "factory_install": [
+      {
+        "num": 3,
+        "fs_size":"2484 MiB",
+        "size":"2724 MiB"
+      },
+      {
+        "num": 1,
+        "fs_size":"1024 MiB",
+        "size":"1224 MiB"
+      }
+    ],
+    "recovery":[
+      {
+        "num": 3,
+        "fs_size":"2484 MiB",
+        "size": "2724 MiB"
+      }
+    ]
+  }
+}

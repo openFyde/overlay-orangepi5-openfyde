@@ -1,7 +1,7 @@
 # Copyright (c) 2020 The Fyde Innovations. All rights reserved.
 # Distributed under the license specified in the root directory of this project.
 
-EAPI="5"
+EAPI="7"
 
 inherit appid
 DESCRIPTION="Creates an app id for this build and update the lsb-release file"

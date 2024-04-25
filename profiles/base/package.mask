@@ -1,0 +1,2 @@
+sys-boot/rk3588-uboot-script::baseboard-inaugural
+chromeos-base/os_install_service::baseboard-inaugural

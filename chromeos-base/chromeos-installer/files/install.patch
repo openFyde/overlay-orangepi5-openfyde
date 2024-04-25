@@ -1,0 +1,21 @@
+diff --git a/installer/chromeos-install b/installer/chromeos-install
+index e7859f0bbc81..5103c3373fd8 100755
+--- a/installer/chromeos-install
++++ b/installer/chromeos-install
+@@ -726,6 +726,7 @@ install_stateful() {
+       var_overlay/db/pkg
+       var_overlay/lib/portage
+       dev_image
++      fyde
+     "
+ 
+     local rootfs_dlc="${ROOT}/opt/google/dlc"
+@@ -984,6 +985,8 @@ do_post_install() {
+   fi
+   local dst_rootfs_dev=""
+ 
++  FLAGS_skip_postinstall="${FLAGS_FALSE}"
++  echo "Ignoring --skip_postinstall"
+   # Now run the postinstall script on one new rootfs. Note that even though
+   # we're passing the new destination partition number as an arg, the postinst
+   # script had better not try to access it, for the reasons we just gave.

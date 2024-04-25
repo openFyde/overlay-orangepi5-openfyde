@@ -1,0 +1,1 @@
+chromeos-bsp-orangepi5-openfyde-base-0.0.1.ebuild
