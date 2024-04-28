@@ -1,0 +1,68 @@
+Index: installer/chromeos-install
+===================================================================
+--- installer.orig/chromeos-install
++++ installer/chromeos-install
+@@ -722,6 +722,7 @@ install_stateful() {
+       var_overlay/db/pkg
+       var_overlay/lib/portage
+       dev_image
++      fyde
+     "
+ 
+     local rootfs_dlc="${ROOT}/opt/google/dlc"
+@@ -1026,6 +1027,8 @@ do_post_install() {
+   fi
+   local dst_rootfs_dev=""
+ 
++  FLAGS_skip_postinstall="${FLAGS_FALSE}"
++  echo "Ignoring --skip_postinstall"
+   # Now run the postinstall script on one new rootfs. Note that even though
+   # we're passing the new destination partition number as an arg, the postinst
+   # script had better not try to access it, for the reasons we just gave.
+Index: installer/chromeos-postinst
+===================================================================
+--- installer.orig/chromeos-postinst
++++ installer/chromeos-postinst
+@@ -58,6 +58,32 @@ get_android_version() {
+   echo ${version#*=}
+ }
+ 
++get_mtd_dev()
++{
++  echo '/dev/mtdblock0'
++}
++
++get_boot_type()
++{
++  cat /mnt/stateful_partition/fyde/Env.txt \
++    | grep -o '^[^#]*' | grep 'overlays=' | grep -q 'ssd-sata'
++
++  if [ "$?" -eq "0" ]; then
++    echo 'SATA'
++    return 0
++  fi
++
++  cat /mnt/stateful_partition/fyde/Env.txt \
++    | grep -o '^[^#]*' | grep 'fdtfile=' | grep -q 'rk3588s-orangepi-5b'
++
++  if [ "$?" -eq "0" ]; then
++    echo 'EMMC'
++  else
++    echo 'NVME'
++  fi
++}
++
++
+ main() {
+   local target_disk=$(get_disk_dev)
+   local target_part_num=$(get_part_num)
+@@ -80,6 +106,9 @@ main() {
+   fi
+ 
+   local install_dev="$1"
++
++  chroot . /usr/sbin/flash_spi.sh "$(get_mtd_dev)" "$(get_boot_type)"
++  chroot . /usr/sbin/copy_kernel.sh "$target_disk"
+   shift
+   chroot . /usr/bin/cros_installer --type="postinst" \
+          --install_dev="${install_dev}" --install_dir="/" "$@"
