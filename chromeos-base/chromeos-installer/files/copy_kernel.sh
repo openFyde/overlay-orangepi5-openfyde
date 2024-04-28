@@ -25,6 +25,7 @@ copy_kernel_to() {
 
   [ -f /mnt/stateful_partition/fyde/Env.txt ] && \
       cp /mnt/stateful_partition/fyde/Env.txt "${efi_mnt}/boot/"
+  cp /boot/boot.scr.uimg ${efi_mnt}/boot/
 }
 
 main() {

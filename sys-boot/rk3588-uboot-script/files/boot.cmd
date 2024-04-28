@@ -59,7 +59,7 @@ if test "${bootlogo}" = "true"; then setenv consoleargs "bootsplash.bootfile=boo
 if test "${devtype}" = "mmc"; then part uuid mmc ${devnum}:${rootpart} partuuid; fi
 
 echo "rootpart: ${devtype} ${devnum}:${rootpart} uuid:${root_uuid}"
-setenv bootargs rootwait ro cros_debug cros_secure cros_legacy console=ttyS2,1500000n8 root=PARTUUID=${root_uuid} cma=64M usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
+setenv bootargs rootwait ro cros_debug cros_secure console=ttyS2,1500000n8 root=PARTUUID=${root_uuid} usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
 
 # setenv rootpart ${distro_bootpart}
 

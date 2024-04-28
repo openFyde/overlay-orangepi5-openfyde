@@ -1,1 +1,0 @@
-../overlay-orangepi5-openfyde-base/make-release-image.sh
