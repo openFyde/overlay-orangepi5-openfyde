@@ -13,6 +13,7 @@ IUSE=""
 
 RDEPEND="
     virtual/openfyde-board-spec
+    virtual/rk3588-ai
 "
 
 DEPEND="${RDEPEND}"
