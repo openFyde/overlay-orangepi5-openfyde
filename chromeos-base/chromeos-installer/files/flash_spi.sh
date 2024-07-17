@@ -23,10 +23,11 @@ main() {
  local loader_md5="$(md5sum ${loader} | awk '{print $1}')"
 
  if [ "$target_md5" != "$loader_md5" ]; then
-    echo "installing $loader to $target"
-    dd if=$loader of=$target status=progress bs=1024 conv=fdatasync
+    echo "pseudo installing $loader to $target"
+#    dd if=$loader of=$target status=progress bs=1024 conv=fdatasync
     echo "done"
  fi
 }
 
 main "$@"
+
