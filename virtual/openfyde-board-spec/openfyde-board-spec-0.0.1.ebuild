@@ -12,7 +12,6 @@ KEYWORDS="*"
 IUSE=""
 
 RDEPEND="
-  virtual/fydemina
   chromeos-base/chromeos-bsp-inaugural
   chromeos-base/chromeos-bsp-inaugural-openfyde
   chromeos-base/chromeos-bsp-orangepi5-openfyde-base

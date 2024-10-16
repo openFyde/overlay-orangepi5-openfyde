@@ -3,7 +3,7 @@
 skip_blacklist_check=1
 skip_test_image_content=1
 
-image_dir="${ROOT}/usr/share/orangepi5"
+image_dir="${ROOT}/usr/share/orangepi5plus"
 install_bootloader() {
   local image="$1"
 

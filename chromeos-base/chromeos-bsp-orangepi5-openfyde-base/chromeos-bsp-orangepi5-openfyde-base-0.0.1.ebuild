@@ -21,6 +21,7 @@ RDEPEND="
     chromeos-base/os_install_service
     chromeos-base/fake-camera-config
     app-misc/brcm_patchram_plus
+    chromeos-base/workaround-for-8852be
 "
 
 DEPEND="${RDEPEND}"

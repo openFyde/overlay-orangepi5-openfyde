@@ -1,32 +1,32 @@
-Index: installer/chromeos-install
-===================================================================
---- installer.orig/chromeos-install
-+++ installer/chromeos-install
-@@ -722,6 +722,7 @@ install_stateful() {
+diff --git a/chromeos-install b/chromeos-install
+index 3e57814c93..3a41c18d8a 100755
+--- a/chromeos-install
++++ b/chromeos-install
+@@ -750,6 +750,7 @@ install_stateful() {
+     dirlist="${dirlist}
        var_overlay/db/pkg
        var_overlay/lib/portage
-       dev_image
 +      fyde
-     "
- 
-     local rootfs_dlc="${ROOT}/opt/google/dlc"
-@@ -1026,6 +1027,8 @@ do_post_install() {
+       dev_image"
+
+     local metadata_cmd="dlc_metadata_util --metadata_dir=${ROOT}/opt/google/dlc"
+@@ -1057,6 +1058,8 @@ do_post_install() {
    fi
    local dst_rootfs_dev=""
- 
+
 +  FLAGS_skip_postinstall="${FLAGS_FALSE}"
 +  echo "Ignoring --skip_postinstall"
    # Now run the postinstall script on one new rootfs. Note that even though
    # we're passing the new destination partition number as an arg, the postinst
    # script had better not try to access it, for the reasons we just gave.
-Index: installer/chromeos-postinst
-===================================================================
---- installer.orig/chromeos-postinst
-+++ installer/chromeos-postinst
-@@ -58,6 +58,32 @@ get_android_version() {
-   echo ${version#*=}
+diff --git a/chromeos-postinst b/chromeos-postinst
+index 180d8a615b..d3fac2a9e7 100755
+--- a/chromeos-postinst
++++ b/chromeos-postinst
+@@ -37,6 +37,32 @@ cleanup() {
+   done
  }
- 
+
 +get_mtd_dev()
 +{
 +  echo '/dev/mtdblock0'
@@ -54,11 +54,11 @@ Index: installer/chromeos-postinst
 +
 +
  main() {
-   local target_disk=$(get_disk_dev)
-   local target_part_num=$(get_part_num)
-@@ -80,6 +106,9 @@ main() {
+   cd "${INSTALL_ROOT}" || exit 1
+
+@@ -52,6 +78,9 @@ main() {
    fi
- 
+
    local install_dev="$1"
 +
 +  chroot . /usr/sbin/flash_spi.sh "$(get_mtd_dev)" "$(get_boot_type)"
