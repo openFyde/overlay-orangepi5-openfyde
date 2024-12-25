@@ -20,12 +20,14 @@ DEPEND="${RDEPEND}
 S=${WORKDIR}
 
 src_compile() {
-  cp ${FILESDIR}/boot.cmd boot.cmd
-  mkimage -A arm -O linux -T script -C none -a 0 -e 0 \
-    -n "boot" -d boot.cmd boot.scr.uimg || die
+  for slot in A B; do
+    cp ${FILESDIR}/boot-${slot}.cmd boot-${slot}.cmd
+    ${FILESDIR}/mkimage -A arm -O linux -T script -C none -a 0 -e 0 \
+      -n "boot" -d boot-${slot}.cmd boot-${slot}.scr.uimg || die
+  done
 }
 
 src_install() {
   insinto /boot
-  doins boot.scr.uimg
+  doins *.scr.uimg
 }

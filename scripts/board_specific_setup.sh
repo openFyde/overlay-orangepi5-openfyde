@@ -31,14 +31,7 @@ install_boot_scr() {
 
   info "Copying /boot/boot.scr.uimg"
   [ -d "${efi_dir}/boot" ] || sudo mkdir "${efi_dir}/boot"
-  sudo cp "${ROOT}/boot/boot.scr.uimg" "${efi_dir}/boot/"
-
-#  info "Copying /boot/Image"
-#  sudo cp "${ROOT}/boot/Image" "${efi_dir}/boot/Image"
-
-#  info "Copying /boot/rockchip"
-#  [ -d "${efi_dir}/boot/rockchip" ] && sudo rm -rf "${efi_dir}/boot/rockchip"
-#  sudo cp -r "${ROOT}/boot/rockchip/rk3588*orangepi*" "${efi_dir}/boot/"
+  sudo cp "${ROOT}/boot/boot-A.scr.uimg" "${efi_dir}/boot/boot.scr.uimg"
 
   sudo umount "${efi_dir}"
   rmdir "${efi_dir}"

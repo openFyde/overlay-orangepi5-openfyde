@@ -16,7 +16,6 @@ setenv overlay_error "false"
 
 # setenv overlay_prefix rk3588
 # default values
-setenv rootdev "/dev/mmcblk0p1"
 setenv verbosity "1"
 setenv console "both"
 setenv bootlogo "false"
@@ -25,10 +24,6 @@ setenv docker_optimizations "off"
 setenv earlycon "on"
 setenv user_overlay "/fyde/overlay"
 setenv stateful_part "1"
-
-if test -e ${devtype} ${devnum}:${distro_bootpart} /boot/first-b.txt; then
-  setenv rootpart 5
-fi
 
 echo "Boot script loaded from ${devtype} ${devnum}:${distro_bootpart}"
 
@@ -55,17 +50,12 @@ if test "${console}" = "serial" || test "${console}" = "both"; then setenv conso
 if test "${earlycon}" = "on"; then setenv consoleargs "earlycon ${consoleargs}"; fi
 if test "${bootlogo}" = "true"; then setenv consoleargs "bootsplash.bootfile=bootsplash.orangepi ${consoleargs}"; fi
 
-# get PARTUUID of first partition on SD/eMMC the boot script was loaded from
-if test "${devtype}" = "mmc"; then part uuid mmc ${devnum}:${rootpart} partuuid; fi
-
 echo "rootpart: ${devtype} ${devnum}:${rootpart} uuid:${root_uuid}"
-setenv bootargs rootwait ro cros_debug cros_secure console=ttyS2,1500000n8 root=PARTUUID=${root_uuid} usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
-
-# setenv rootpart ${distro_bootpart}
+setenv bootargs rootwait ro cros_debug cros_legacy console=ttyS2,1500000n8 root=PARTUUID=${root_uuid} usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
 
 load ${devtype} ${devnum}:${rootpart} ${kernel_addr_r} ${prefix}Image
 
-echo "fdtfile: ${prefix}/rockchip/${fdtfile}"
+echo "fdtfile: ${prefix}rockchip/${fdtfile}"
 load ${devtype} ${devnum}:${rootpart} ${fdt_addr_r} ${prefix}/rockchip/${fdtfile}
 fdt addr ${fdt_addr_r}
 fdt resize 65536
