@@ -22,8 +22,8 @@ This repository contains the following packages:
 
 | Packages                   | Description              | Reference                                                                                      |
 |----------------------------|--------------------------|------------------------------------------------------------------------------------------------|
-| chromeos-base/device-appid | Setup device appid       |                                                                                                |
-| profiles/base              | packages and inheritance | [overlay-orangepi5-openfyde-base](https://github.com/openFyde/overlay-orangepi5-openfyde-base) |
+| chromeos-base/device-appid | Setup device appid       | |
+| profiles/base              | packages and inheritance | |
 
 <br>
 
@@ -44,5 +44,50 @@ This repository contains the following packages:
     ![Orange Pi 5 Plus](http://www.orangepi.org/img/pi5-plus/pi5-plus-5.png)
 
 <br>
+
+### 👨‍🔧 Installation 
+1.  Download the release file with the .run extension
+2. Make the file executable by running the command `chmod +x <filename>.run` and then execute the file depending on your target storage type:
+   
+   - For orange pi 5 with NVME, execute:
+       ```
+        ./orangepi5-openfyde-rxxx.run --board orangepi5 --boot nvme
+       ```
+   - For orange pi 5 with SATA, execute:
+       ```
+        ./orangepi5-openfyde-rxxx.run --board orangepi5 --boot sata
+        ```
+   - For orange pi 5b, execute:
+       ```
+       ./orangepi5-openfyde-rxxx.run --board orangepi5b --boot emmc
+       ```
+   - For orange pi 5plus with NVME, execute:
+       ```
+       ./orangepi5-openfyde-rxxx.run --board orangepi5plus --boot nvme
+       ```
+   - For orange pi 5plus with EMMC, execute:
+       ``` 
+       ./orangepi5-openfyde-rxxx.run --board orangepi5plus --boot emmc
+       ```
+   
+    Or, you can just simply run`./orangepi5-openfyde-rxxx.run` without any flag or parameter; the command line prompt will ask you questions to help you decide the `--board` and `--boot` values.
+   
+    The image `orangepi5-openfyde-rxxx.img` that supports booting from SATA/NVMe/eMMC per your choice will then be generated in the current directory.
+
+3.  Flash the image to a TF (microSD) card using your favourite tool, e.g. [dd](https://man7.org/linux/man-pages/man1/dd.1.html) or [balenaEtcher](https://www.balena.io/).
+
+#### ❗Important notes:
+ - All images generated from the .run file will support booting from a TF (microSD) card. The 'target storage' means the storage type where you want to install openFyde while running the openFyde installer. 
+ - The installation process is necessary for some features to work, for example, the "local OTA update" feature introduced since this release; hence it's recommended to carry it out if you want to keep your openFyde OS and use it regularly in the future.
+ - You can flash the image directly to your onboard storage(SATA/NVMe/eMMC). However, you can then only choose the **Try It First** button at OOBE; you WILL NOT be able to perform installation under this circumstance.
+ - The installation process takes approximately 10 minutes, depending on the storage speed.
+
+### 🔄 Manual Update
+Download the file `payload.bin` to your device and execute `openfyde-updater.sh <path_to_payload.bin>` as the root user to perform the upgrade.
+
+### 📚 Additional Resources
+
+- [How to Enable Widevine](https://fydeos.io/docs/knowledge-base/recipes/widevine/)
+
 
 ###### Copyright (c) 2023 Fyde Innovations and the openFyde Authors. Distributed under the license specified in the root directory of this repository.
