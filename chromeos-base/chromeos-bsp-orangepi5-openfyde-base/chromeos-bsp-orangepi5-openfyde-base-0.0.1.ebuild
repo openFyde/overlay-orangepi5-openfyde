@@ -40,4 +40,7 @@ src_install() {
 
     insinto /lib/udev/rules.d
     doins  udev/99-tun.rules
+
+    insinto "/lib/firmware"
+    doins firmware/*
 }
