@@ -1,15 +1,6 @@
 # Recompile with:
 # mkimage -C none -A arm -T script -d /boot/boot.cmd /boot/boot.scr
 
-# official orange pi 5 plus u-boot is not compiled with CONFIG_CMD_SCSI
-if scsi info; then
-  echo "It seems to be Orange Pi 5/5b."
-  setenv fdtfile rk3588s-orangepi-5.dtb
-else
-  echo "It seems to be Orange Pi 5 Plus."
-  setenv fdtfile rk3588-orangepi-5-plus.dtb
-fi
-
 setenv rootpart 3
 setenv load_addr "0x9000000"
 setenv overlay_error "false"
@@ -55,8 +46,8 @@ setenv bootargs rootwait ro cros_debug cros_legacy console=ttyS2,1500000n8 root=
 
 load ${devtype} ${devnum}:${rootpart} ${kernel_addr_r} ${prefix}Image
 
-echo "fdtfile: ${prefix}rockchip/${fdtfile}"
-load ${devtype} ${devnum}:${rootpart} ${fdt_addr_r} ${prefix}/rockchip/${fdtfile}
+echo "fdtfile: ${prefix}${fdtfile}"
+load ${devtype} ${devnum}:${rootpart} ${fdt_addr_r} ${prefix}${fdtfile}
 fdt addr ${fdt_addr_r}
 fdt resize 65536
 for overlay_file in ${overlays}; do
@@ -75,7 +66,7 @@ done
 
 if test "${overlay_error}" = "true"; then
 	echo "Error applying DT overlays, restoring original DT"
-	load ${devtype} ${devnum}:${rootpart} ${fdt_addr_r} ${prefix}/rockchip/${fdtfile}
+	load ${devtype} ${devnum}:${rootpart} ${fdt_addr_r} ${prefix}${fdtfile}
 else
 	if load ${devtype} ${devnum}:${rootpart} ${load_addr} ${prefix}/rockchip/overlay/${overlay_prefix}fixup.scr; then
 		echo "Applying kernel provided DT fixup script (${overlay_prefix}fixup.scr)"
