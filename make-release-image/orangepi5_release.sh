@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-shell_lines=295         # Adjust it if the script changes
+shell_lines=303         # Adjust it if the script changes
 version_string=r114
 targetdir=orangepi5-openfyde
 TMPROOT=${TMPDIR:=./}
@@ -16,11 +16,15 @@ BOARD_MAGIC=""
 ORANGEPI5="orangepi5"
 ORANGEPI5B="orangepi5b"
 ORANGEPI5PLUS="orangepi5plus"
+ORANGEPI5PRO="orangepi5pro"
+ORANGEPI5MAX="orangepi5max"
 
 declare -A BOARD_MAP=(
     ["$ORANGEPI5"]="OP5 "
     ["$ORANGEPI5B"]="OP5B"
     ["$ORANGEPI5PLUS"]="OP5P"
+    ["$ORANGEPI5PRO"]="OP5R"
+    ["$ORANGEPI5MAX"]="OP5M"
 )
 
 board=""
@@ -60,8 +64,8 @@ usage()
     echo "      do not copy src to target, modify it inplace"
     echo "  '--boot sata/nvme/emmc'"
     echo "      generates images supporting boot from SATA/NVME/EMMC"
-    echo "  '--board orangepi5/orangepi5b/orangepi5plus'"
-    echo "      generates images for orange pi 5/5b/5plus (experimental)"
+    echo "  '--board orangepi5/orangepi5b/orangepi5plus/orangepi5pro/orangepi5max'"
+    echo "      generates images for orange pi 5/5b/5plus/5pro/5max (experimental)"
     exit 1;
 }
 
@@ -144,7 +148,9 @@ enter_menu()
        echo "[1] orange pi 5"
        echo "[2] orange pi 5b"
        echo "[3] orange pi 5 plus"
-       echo "[4] Quit"
+       echo "[4] orange pi 5 pro"
+       echo "[5] orange pi 5 max"
+       echo "[6] Quit"
        echo "-----------------------------"
        echo "Enter your choice:"
 
@@ -153,8 +159,10 @@ enter_menu()
            1) board=$ORANGEPI5; break ;;
            2) board=$ORANGEPI5B; break ;;
            3) board=$ORANGEPI5PLUS; break ;;
-           4) exit 0;;
-           *) err "Invalid choice, please choose between 1-4"; sleep 2 ;;
+           4) board=$ORANGEPI5PRO; break ;;
+           5) board=$ORANGEPI5MAX; break ;;
+           6) exit 0;;
+           *) err "Invalid choice, please choose between 1-6"; sleep 2 ;;
        esac
     done
 
@@ -183,7 +191,7 @@ enter_menu()
     done
     fi
 
-    if [ "$board" == "$ORANGEPI5PLUS" ]; then
+    if [ "$board" == "$ORANGEPI5PLUS" ] || [ "$board" == "$ORANGEPI5PRO" ] || [ "$board" == "$ORANGEPI5MAX" ]; then
     while :
     do
        clear
@@ -217,7 +225,7 @@ fi
 
 [ "$board" == "$ORANGEPI5B" ] && m2="emmc"
 
-[ -z "$board" ] && err "option '--board orangepi5/orangepi5b/orangepi5plus' is required"
+[ -z "$board" ] && err "option '--board orangepi5/orangepi5b/orangepi5plus/orangepi5pro/orangepi5max' is required"
 
 [ -z "$m2" ] && err "option '--boot sata/nvme/emmc' is required"
 
