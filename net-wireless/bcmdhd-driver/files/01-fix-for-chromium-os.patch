@@ -1,0 +1,41 @@
+--- a/Makefile
++++ b/Makefile
+@@ -52,7 +52,7 @@
+ #CONFIG_BCMDHD_TIMESTAMP := y
+ #CONFIG_BCMDHD_WAPI := y
+ #CONFIG_BCMDHD_RANDOM_MAC := y
+-#CONFIG_BCMDHD_REQUEST_FW := y
++CONFIG_BCMDHD_REQUEST_FW := y
+ #CONFIG_BCMDHD_FW_SIGNATURE := y
+ #CONFIG_BCMDHD_DWDS := y
+ CONFIG_BCMDHD_TPUT := y
+@@ -63,14 +63,15 @@
+ CONFIG_MACH_PLATFORM := y
+ #CONFIG_BCMDHD_DTS := y
+ 
+-LINUXDIR  = /lib/modules/$(shell uname -r)/build
++LINUXDIR := $(KBUILD_OUTPUT)
+ PWD = $(shell pwd)
+-KVER = $(shell uname -r)
++KVER := $(shell uname -r)
+ MODDESTDIR = /lib/modules/$(KVER)/kernel/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/
+-ARCH = arm64
++ARCH := arm64
++CROSS_COMPILE := aarch64-cros-linux-gnu-
+ 
+-CONFIG_BCMDHD_FW_PATH="/lib/firmware/ap6275p/fw_bcmdhd.bin"
+-CONFIG_BCMDHD_NVRAM_PATH="/lib/firmware/ap6275p/nvram.txt"
++CONFIG_BCMDHD_FW_PATH="/lib/firmware/fw_bcmdhd.bin"
++CONFIG_BCMDHD_NVRAM_PATH="/lib/firmware/nvram.txt"
+ 
+ DHDCFLAGS = -Wall -Wstrict-prototypes -Wno-date-time -Wno-strict-prototypes   \
+ 	-Wno-uninitialized -Wno-unused-but-set-variable -Wno-address	      \
+@@ -460,7 +461,7 @@
+ 	DHDCFLAGS += -DCONFIG_BCMDHD_NVRAM_PATH="\"/vendor/etc/firmware/nvram.txt\""
+ 	DHDCFLAGS += -DCONFIG_BCMDHD_CLM_PATH="\"/vendor/etc/firmware/clm_bcmdhd.blob\""
+ endif
+-	DHDCFLAGS += -DCONFIG_BCMDHD_CONFIG_PATH="\"/vendor/etc/firmware/config.txt\""
++	DHDCFLAGS += -DCONFIG_BCMDHD_CONFIG_PATH="\"/lib/firmware/config.txt\""
+ endif
+ 
+ ifeq ($(CONFIG_BCMDHD_FW_SIGNATURE),y)
