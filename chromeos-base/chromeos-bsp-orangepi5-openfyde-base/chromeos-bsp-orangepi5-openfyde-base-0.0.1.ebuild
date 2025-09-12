@@ -22,6 +22,7 @@ RDEPEND="
     chromeos-base/fake-camera-config
     app-misc/brcm_patchram_plus
     chromeos-base/workaround-for-8852be
+    chromeos-base/fydeos-power-daemon-go
 "
 
 DEPEND="${RDEPEND}"
@@ -43,4 +44,7 @@ src_install() {
 
     insinto "/lib/firmware"
     doins firmware/*
+
+    insinto /etc/powerd/board
+    doins board/*
 }
