@@ -14,7 +14,7 @@
  #CONFIG_BCMDHD_DTS := y
  
 -LINUXDIR  = /lib/modules/$(shell uname -r)/build
-+LINUXDIR := $(KBUILD_OUTPUT)
++LINUXDIR := $(KERNEL_DIR)
  PWD = $(shell pwd)
 -KVER = $(shell uname -r)
 +KVER := $(shell uname -r)
@@ -39,3 +39,22 @@
  endif
  
  ifeq ($(CONFIG_BCMDHD_FW_SIGNATURE),y)
+@@ -512,15 +513,15 @@
+ 
+ bcmdhd_pcie:
+ 	$(warning "building BCMDHD_PCIE..........")
+-	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_PCIE=y
++	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_PCIE=y CONFIG_CC_IS_CLANG=
+ 
+ bcmdhd_sdio:
+ 	$(warning "building BCMDHD_SDIO..........")
+-	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_SDIO=y
++	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_SDIO=y CONFIG_CC_IS_CLANG=
+ 
+ bcmdhd_usb:
+ 	$(warning "building BCMDHD_USB..........")
+-	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_USB=y
++	$(MAKE) -C $(LINUXDIR) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules CONFIG_BCMDHD=m CONFIG_BCMDHD_USB=y CONFIG_CC_IS_CLANG=
+ 
+ clean:
+ 	rm -rf *.o *.ko *.mod.c *~ .*.cmd *.o.cmd .*.o.cmd *.mod \
