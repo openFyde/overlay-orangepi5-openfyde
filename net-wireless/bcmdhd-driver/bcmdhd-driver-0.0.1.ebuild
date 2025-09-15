@@ -40,6 +40,15 @@ src_install() {
   doins *.ko || die "doins modules failed"
 }
 
+# there is a bug in linux-mod_pkg_preinst() that stop depmod from generating
+pkg_preinst() {
+	debug-print-function ${FUNCNAME} $*
+	[ -n "${MODULES_OPTIONAL_USE}" ] && use !${MODULES_OPTIONAL_USE} && return
+
+	[ -d "${D}/lib/modules" ] && UPDATE_DEPMOD=true || UPDATE_DEPMOD=false
+	[ -d "${D}/lib/modules" ] && UPDATE_MODULEDB=true || UPDATE_MODULEDB=false
+}
+
 PATCHES=(
   "${FILESDIR}/01-fix-for-chromium-os.patch"
 )
