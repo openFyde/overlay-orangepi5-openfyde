@@ -1,0 +1,11 @@
+--- a/chromeos_postinst.cc
++++ b/chromeos_postinst.cc
+@@ -453,7 +453,7 @@
+ 
+     int mount_result = mount(install_config.boot.device().value().c_str(),
+                              install_config.boot.mount().value().c_str(),
+-                             "vfat", MS_NODEV | MS_NOEXEC | MS_NOSUID, nullptr);
++                             "vfat", MS_NODEV | MS_NOEXEC | MS_NOSUID, "iocharset=iso8859-1");
+ 
+     if (mount_result == 0) {
+       mount_success = true;
