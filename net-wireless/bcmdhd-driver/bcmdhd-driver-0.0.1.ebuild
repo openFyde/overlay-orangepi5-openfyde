@@ -8,6 +8,7 @@ inherit linux-info linux-mod
 DESCRIPTION="BCMDHD sdio/pcie WiFi kernel drivers"
 HOMEPAGE="https://github.com/armbian/bcmdhd-dkms/"
 SRC_URI="https://github.com/armbian/bcmdhd-dkms/archive/refs/tags/101.10.591.52.27-5.tar.gz"
+RESTRICT="mirror"
 
 LICENSE="GPL-2"
 KEYWORDS="amd64 arm64"
